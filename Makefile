@@ -44,6 +44,9 @@ build_info.txt:
 	@echo "build_user=\"`id -u -n`\"" >> $@
 	@echo "base_version=\"$(PACKAGE_VERSION)\"" >> $@
 
+git_hash.txt:
+	@echo "$(shell git rev-parse HEAD)" >> $@
+
 # Deprecated for now, no 0.4.1 on pypi, use release binary wheel that has no CUDA errors anymore
 docker_build_deps:
 	@cp docker_build_script_ubuntu.sh docker_build_script_ubuntu.sh.back
@@ -92,6 +95,9 @@ else
 	DOCKER_BUILDKIT=1 docker build -t $(DOCKER_TEST_IMAGE) -f Dockerfile .
 	docker push $(DOCKER_TEST_IMAGE)
 endif
+
+just_docker_build: build_info.txt
+	DOCKER_BUILDKIT=1 docker build -t $(DOCKER_TEST_IMAGE) -f Dockerfile .
 
 docker_build_runner: docker_build
 	-docker pull $(DOCKER_TEST_IMAGE)

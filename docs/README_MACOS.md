@@ -1,6 +1,9 @@
-# MACOS
+# macOS
 
 Supports CPU and MPS (Metal M1/M2).
+
+- [Install](#install)
+- [Run](#run)
 
 ## Install
 * Download and Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html#macos-installers) for Python 3.10.
@@ -17,25 +20,31 @@ Supports CPU and MPS (Metal M1/M2).
 
     # fix any bad env
     pip uninstall -y pandoc pypandoc pypandoc-binary
+    pip install --upgrade pip
+    python -m pip install --upgrade setuptools
     
-    # CPU only:
+    # Install Torch:
     pip install -r requirements.txt --extra-index https://download.pytorch.org/whl/cpu
-    
-    # GPU only:
-    pip install -r requirements.txt --extra-index https://download.pytorch.org/whl/cu117
     ```
 * Install document question-answer dependencies:
     ```bash
     # Required for Doc Q/A: LangChain:
     pip install -r reqs_optional/requirements_optional_langchain.txt
     # Required for CPU: LLaMa/GPT4All:
+    pip uninstall -y llama-cpp-python llama-cpp-python-cuda
     pip install -r reqs_optional/requirements_optional_gpt4all.txt
+    pip install librosa
+    pip install llama-cpp-python
     # Optional: PyMuPDF/ArXiv:
     pip install -r reqs_optional/requirements_optional_langchain.gpllike.txt
     # Optional: Selenium/PlayWright:
     pip install -r reqs_optional/requirements_optional_langchain.urls.txt
+    # Optional: DocTR OCR:
+    conda install weasyprint pygobject -c conda-forge -y
+    pip install -r reqs_optional/requirements_optional_doctr.txt                     
     # Optional: for supporting unstructured package
     python -m nltk.downloader all
+  ```
 * For supporting Word and Excel documents, download libreoffice: https://www.libreoffice.org/download/download-libreoffice/ .
 * To support OCR, install [Tesseract Documentation](https://tesseract-ocr.github.io/tessdoc/Installation.html):
     ```bash
@@ -44,12 +53,32 @@ Supports CPU and MPS (Metal M1/M2).
     brew install poppler
     brew install tesseract
     brew install tesseract-lang
+    brew install rubberband
+    brew install pygobject3 gtk4
+    brew install libjpeg
+    brew install libpng
     ```
-* Metal M1/M2 Only: Install newer Torch for GPU support:
-   ```bash
-   pip uninstall -y torch
-   pip install --pre torch --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-   ```
+
+See [FAQ](FAQ.md#adding-models) for how to run various models.  See [CPU](README_CPU.md) and [GPU](README_GPU.md) for some other general aspects about using h2oGPT on CPU or GPU, such as which models to try.
+
+## Run 
+In your terminal, run: 
+
+```python3 generate.py --base_model=TheBloke/zephyr-7B-beta-GGUF --prompt_type=zephyr --max_seq_len=4096```
+
+Or you can run it from a file called `run.sh` that would contain following text:
+
+```
+#!/bin/bash
+python generate.py --base_model=TheBloke/zephyr-7B-beta-GGUF --prompt_type=zephyr --max_seq_len=4096
+```
+
+and run `sh run.sh` from the terminal placed in the parent folder of `run.sh`
+
+---
+
+## Issues
+* Metal M1/M2 Only:
    Verify whether torch uses MPS, run below python script:
      ```python
       import torch
@@ -64,40 +93,6 @@ Supports CPU and MPS (Metal M1/M2).
      ```bash
      tensor([1.], device='mps:0')
      ```
-* Metal M1/M2 Only:  Install and setup GPU-specific dependencies to support LLaMa.cpp on GPU:
-    ```bash
-    pip uninstall llama-cpp-python -y
-    CMAKE_ARGS="-DLLAMA_METAL=on" FORCE_CMAKE=1 pip install -U llama-cpp-python==0.1.78 --no-cache-dir
-    ```
-    - Pass difference value of `--model_path_llama` if download a different GGML v3 model from TheBloke, or pass URL/path in UI. The default model can be [downloaded here](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/resolve/main/llama-2-7b-chat.ggmlv3.q8_0.bin) and placed in repo folder or give this URL.
-    - **Note** Only supports v3 ggml 4 bit quantized models for MPS, so use llama models ends with `ggmlv3` & `q4_x.bin`.
-
----
-
-## Run
-
-* To run LLaMa.cpp model in CPU or GPU mode:
-    ```bash
-    python generate.py --base_model='llama' --prompt_type=llama2 --score_model=None --langchain_mode='UserData' --user_path=user_path
-    ```
-Ignore CLI output showing `0.0.0.0`, and instead go to http://localhost:7860 or the public live URL printed by the server (disable shared link with `--share=False`).
-
-* Full Hugging Face Model (recommended for M1/M2 only):
-    ```bash
-    python generate.py --base_model=h2oai/h2ogpt-gm-oasst1-en-2048-open-llama-7b --score_model=None --langchain_mode='UserData' --user_path=user_path
-    ```
-
-* CLI mode:
-    ```bash
-    python generate.py --base_model='llama' --prompt_type=llama2 --score_model=None --langchain_mode='UserData' --user_path=user_path --cli==True
-    ```
-
-See [CPU](README_CPU.md) and [GPU](README_GPU.md) for some other general aspects about using h2oGPT on CPU or GPU, such as which models to try.
-
----
-
-## Issues
-
 * If you see `ld: library not found for -lSystem` then ensure you do below and then retry from scratch to do `pip install` commands:
     ```bash
     export LDFLAGS=-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib`
@@ -116,5 +111,12 @@ See [CPU](README_CPU.md) and [GPU](README_GPU.md) for some other general aspects
     ```bash
     ARCHFLAGS="-arch x86_64" pip install -r requirements.txt
     ```
+* Metal M1/M2 Only
+  * By default requirements_optional_gpt4all.txt should install correct llama_cpp_python packages for GGUF.  See [https://github.com/jllllll/llama-cpp-python-cuBLAS-wheels/releases](https://github.com/jllllll/llama-cpp-python-cuBLAS-wheels/releases) or [https://github.com/abetlen/llama-cpp-python/releases](https://github.com/abetlen/llama-cpp-python/releases) for other releases if you encounter any issues.
+  * If any issues, then compile:
+      ```bash
+      pip uninstall llama-cpp-python -y
+      CMAKE_ARGS="-DLLAMA_METAL=on" FORCE_CMAKE=1 pip install -U llama-cpp-python==0.2.26 --no-cache-dir
+      ```
 
 * If you encounter an error while building a wheel during the `pip install` process, you may need to install a C++ compiler on your computer.

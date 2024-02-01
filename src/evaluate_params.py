@@ -1,4 +1,4 @@
-input_args_list = ['model_state', 'my_db_state', 'selection_docs_state', 'requests_state']
+input_args_list = ['model_state', 'my_db_state', 'selection_docs_state', 'requests_state', 'roles_state']
 
 no_default_param_names = [
     'instruction',
@@ -6,6 +6,7 @@ no_default_param_names = [
     'context',
     'instruction_nochat',
     'iinput_nochat',
+    'h2ogpt_key',
 ]
 
 gen_hyper0 = ['num_beams',
@@ -19,8 +20,9 @@ gen_hyper0 = ['num_beams',
               ]
 gen_hyper = ['temperature',
              'top_p',
-             'top_k'] + gen_hyper0
-reader_names = ['image_loaders', 'pdf_loaders', 'url_loaders', 'jq_schema']
+             'top_k',
+             'penalty_alpha'] + gen_hyper0
+reader_names = ['image_audio_loaders', 'pdf_loaders', 'url_loaders', 'jq_schema', 'extract_frames', 'llava_prompt']
 
 eval_func_param_names = ['instruction',
                          'iinput',
@@ -41,14 +43,41 @@ eval_func_param_names = ['instruction',
                          'chunk_size',
                          'document_subset',
                          'document_choice',
+                         'document_source_substrings',
+                         'document_source_substrings_op',
+                         'document_content_substrings',
+                         'document_content_substrings_op',
+
                          'pre_prompt_query',
                          'prompt_query',
                          'pre_prompt_summary',
                          'prompt_summary',
+                         'hyde_llm_prompt',
                          'system_prompt',
                          ] + \
                         reader_names + \
-                        ['visible_models']
+                        ['visible_models',
+                         'h2ogpt_key',
+                         'add_search_to_context',
+
+                         'chat_conversation',
+                         'text_context_list',
+                         'docs_ordering_type',
+                         'min_max_new_tokens',
+                         'max_input_tokens',
+                         'max_total_input_tokens',
+                         'docs_token_handling',
+                         'docs_joiner',
+                         'hyde_level',
+                         'hyde_template',
+                         'hyde_show_only_final',
+                         'doc_json_mode',
+
+                         'chatbot_role',
+                         'speaker',
+                         'tts_language',
+                         'tts_speed',
+                         ]
 
 # form evaluate defaults for submit_nochat_api
 eval_func_param_names_defaults = eval_func_param_names.copy()

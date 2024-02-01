@@ -1,5 +1,5 @@
 # devel needed for bitsandbytes requirement of libcudart.so, otherwise runtime sufficient
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -7,14 +7,17 @@ ENV PATH="/h2ogpt_conda/bin:${PATH}"
 ARG PATH="/h2ogpt_conda/bin:${PATH}"
 
 ENV HOME=/workspace
-ENV CUDA_HOME=/usr/local/cuda-11.8
+ENV CUDA_HOME=/usr/local/cuda-12.1
 ENV VLLM_CACHE=/workspace/.vllm_cache
+ENV TIKTOKEN_CACHE_DIR=/workspace/tiktoken_cache
 
 WORKDIR /workspace
-RUN mkdir -p /workspace && chmod -R a+rwx /workspace
 
 COPY . /workspace/
+
 RUN cd /workspace && ./docker_build_script_ubuntu.sh
+
+RUN chmod -R a+rwx /workspace
 
 ARG user=h2ogpt
 ARG group=h2ogpt
